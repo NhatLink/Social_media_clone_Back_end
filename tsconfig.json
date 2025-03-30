@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Cấu hình phiên bản ECMAScript mục tiêu
+    "module": "commonjs", // Cấu hình kiểu module cho Node.js
+    "outDir": "./dist", // Đường dẫn xuất ra tệp JavaScript biên dịch
+    "rootDir": "./src", // Thư mục gốc chứa mã nguồn TypeScript
+    "esModuleInterop": true, // Cấu hình để hỗ trợ import từ các thư viện không phải ES6
+    "strict": true, // Bật chế độ kiểm tra nghiêm ngặt
+    "skipLibCheck": true, // Bỏ qua việc kiểm tra các tệp khai báo thư viện .d.ts
+    "forceConsistentCasingInFileNames": true, // Đảm bảo phân biệt chữ hoa chữ thường trong tên tệp
+    "resolveJsonModule": true, // Hỗ trợ import tệp JSON
+    "moduleResolution": "node", // Cấu hình cách thức resolve module
+    "baseUrl": ".", // Cấu hình base path cho các import
+    "paths": {
+      "~/*": ["src/*"] // Đặt alias cho các thư mục
+    }
+  },
+  "include": ["src/**/*"], // Bao gồm tất cả các tệp trong thư mục src
+  "exclude": ["node_modules"], // Loại trừ thư mục node_modules
+  "files": ["src/type.d.ts"] // Các file dùng để defined global type cho dự án
+}
