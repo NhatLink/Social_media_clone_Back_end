@@ -10,11 +10,12 @@ export default [
   ...tseslint.configs.recommended,
   {
     plugins: {
-      prettier: eslintPluginPrettier,
+      prettier: eslintPluginPrettier
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-require-imports': 'off',
       'prettier/prettier': [
         'warn',
         {
@@ -26,10 +27,10 @@ export default [
           useTabs: false,
           singleQuote: true,
           printWidth: 120,
-          jsxSingleQuote: true,
-        },
-      ],
+          jsxSingleQuote: true
+        }
+      ]
     },
-    ignores: ['**/node_modules/', '**/dist/'],
-  },
+    ignores: ['**/node_modules/', '**/dist/']
+  }
 ]
