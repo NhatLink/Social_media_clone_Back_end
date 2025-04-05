@@ -1,5 +1,6 @@
-import { MongoClient, ServerApiVersion } from 'mongodb'
+import { Collection, Db, MongoClient } from 'mongodb'
 import { config } from 'dotenv'
+import User from '../models/schemas/users.schema'
 config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASS}@socialmedia.9regswy.mongodb.net/?retryWrites=true&w=majority&appName=SocialMedia`
 
@@ -28,19 +29,30 @@ const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASS}@soc
 
 class DatabaseService {
   private client: MongoClient
+  private db: Db
   constructor() {
     this.client = new MongoClient(uri) // 👉 Lưu đối tượng MongoClient trong class
+    this.db = this.client.db(process.env.DB_NAME)
   }
 
   async connect() {
     try {
-      await this.client.db('admin').command({ ping: 1 })
+      await this.db.command({ ping: 1 })
       console.log("'Pinged your deployment. You successfully connected to MongoDB!'")
     } catch (error) {
       console.error('Lỗi kết nối MongoDB:', error)
-    } finally {
-      await this.client.close()
     }
+    // finally {
+    //   await this.client.close()
+    // }
+  }
+
+  getCollection<T extends Document = Document>(name: string): Collection<T> {
+    return this.db.collection<T>(name)
+  }
+
+  get users(): Collection<User> {
+    return this.db.collection<User>(process.env.DB_USERS_COLLECTION as string)
   }
 
   async close() {
