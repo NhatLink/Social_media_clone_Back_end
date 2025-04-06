@@ -20,9 +20,10 @@ export const loginController = (req: Request, res: Response) => {
 export const registerController = async (req: Request, res: Response) => {
   const { email, password } = req.body
   try {
-    userService.register({ email, password })
+    const result = await userService.register({ email, password })
     res.status(200).json({
-      message: 'User registered successfully'
+      message: 'User registered successfully',
+      result
     })
     return
   } catch (error) {

@@ -14,6 +14,10 @@ class UserService {
 
     return result
   }
+  async checkEmailExists(email: string) {
+    const user = await databaseService.users.findOne({ email })
+    return user !== null // Trả về true nếu tìm thấy user với email này
+  }
 }
 
 // 👇 Export object để sử dụng luôn mà không cần khởi tạo lại
