@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express'
+import { Router } from 'express'
 import { loginValidator, registerValidation } from '../middlewares/users.midlewares'
 import { loginController, registerController } from '../controllers/users.controllers'
 import validate from '../units/validation'
