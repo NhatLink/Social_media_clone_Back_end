@@ -17,4 +17,18 @@ const validate = (validations: ContextRunner[]) => {
   }
 }
 
+export const validateAll = (validations: ContextRunner[]) => {
+  return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    await Promise.all(validations.map((validation) => validation.run(req)))
+    // catch all validate in one time
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    next()
+  }
+}
+
 export default validate

@@ -5,7 +5,7 @@ export const signToken = ({
   payload,
   privatekey = process.env.JWT_KEY_SECRET as string,
   options = {
-    algorithm: 'RS256'
+    algorithm: 'HS256'
   }
 }: {
   payload: string | Buffer | object
