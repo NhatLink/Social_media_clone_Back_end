@@ -13,11 +13,3 @@ export const wrapAsync = (fn: (req: Request, res: Response, next: NextFunction) 
   //}
   //try/catch using promise, but make sure func is async function
 }
-
-export const errorHandlerGlobal = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err.message)
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Đã xảy ra lỗi'
-  })
-}

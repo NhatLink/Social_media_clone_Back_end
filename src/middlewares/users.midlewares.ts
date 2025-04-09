@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import userService from '../services/users.services'
+import { ErrorWithStatus } from '../models/Errors'
 
 export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body
@@ -39,7 +40,8 @@ export const registerValidation = checkSchema({
         // Kiểm tra email đã tồn tại chưa
         const emailExists = await userService.checkEmailExists(value)
         if (emailExists) {
-          throw new Error('Email này đã tồn tại')
+          // throw new ErrorWithStatus({ message: 'Email already exits', status: 400 })
+          throw new Error('Email already exits')
         }
       }
     }

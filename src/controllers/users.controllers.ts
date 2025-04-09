@@ -3,7 +3,7 @@ import databaseService from '../services/database.services'
 import User from '../models/schemas/users.schema'
 import userService from '../services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { RegisterReqBody } from '../models/schemas/requests/users.requests'
+import { RegisterReqBody } from '../models/requests/users.requests'
 
 export const loginController = (req: Request, res: Response) => {
   const { email, password } = req.body

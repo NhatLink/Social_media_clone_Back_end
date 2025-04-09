@@ -1,5 +1,5 @@
 import { TokenType } from '../constants/enums'
-import { RegisterReqBody } from '../models/schemas/requests/users.requests'
+import { RegisterReqBody } from '../models/requests/users.requests'
 import User from '../models/schemas/users.schema'
 import { hashPassword } from '../units/crypto'
 import { signToken } from '../units/jwt'
