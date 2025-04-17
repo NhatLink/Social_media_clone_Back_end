@@ -1,5 +1,7 @@
+import { ObjectId } from 'mongodb'
 import { TokenType } from '../constants/enums'
 import { RegisterReqBody } from '../models/requests/users.requests'
+import RefreshToken from '../models/schemas/RefreshToken.schema'
 import User from '../models/schemas/users.schema'
 import { hashPassword } from '../units/crypto'
 import { signToken } from '../units/jwt'
@@ -28,6 +30,9 @@ class UserService {
       }
     })
   }
+  private signRefershTokenAccessToken(user_id: string) {
+    return Promise.all([this.signAccessToken(user_id), this.signRefershToken(user_id)])
+  }
   async register(payload: RegisterReqBody) {
     // const { name, email, password, date_of_birth } = payload
 
@@ -38,10 +43,7 @@ class UserService {
       })
     )
     const user_id = result.insertedId.toString()
-    const [access_token, refesh_token] = await Promise.all([
-      this.signAccessToken(user_id),
-      this.signRefershToken(user_id)
-    ])
+    const [access_token, refesh_token] = await this.signRefershTokenAccessToken(user_id)
 
     return {
       result,
@@ -53,8 +55,17 @@ class UserService {
     const user = await databaseService.users.findOne({ email })
     return user !== null // Trả về true nếu tìm thấy user với email này
   }
+  async login(user_id: string) {
+    const [access_token, refesh_token] = await this.signRefershTokenAccessToken(user_id)
+    const id = new ObjectId(user_id) //chuyen string thanh objectID
+    await databaseService.refreshToken.insertOne(new RefreshToken({ token: refesh_token, user_id: id }))
+    return {
+      access_token,
+      refesh_token
+    }
+  }
 }
 
-// 👇 Export object để sử dụng luôn mà không cần khởi tạo lại
+// Export object để sử dụng luôn mà không cần khởi tạo lại
 const userService = new UserService()
 export default userService

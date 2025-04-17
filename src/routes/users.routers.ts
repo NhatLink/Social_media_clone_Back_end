@@ -6,7 +6,7 @@ import { wrapAsync } from '../units/handller'
 
 const usersRouter = Router()
 
-usersRouter.post('/login', loginValidator, loginController)
+usersRouter.post('/login', validate(loginValidator), wrapAsync(loginController))
 usersRouter.post('/register', validate(registerValidation), wrapAsync(registerController))
 
 export default usersRouter

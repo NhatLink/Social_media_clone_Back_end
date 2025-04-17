@@ -2,58 +2,38 @@ import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import userService from '../services/users.services'
 import { ErrorWithStatus } from '../models/Errors'
+import { validationMessages } from '../constants/validationMessages '
+import databaseService from '../services/database.services'
+import { hashPassword } from '../units/crypto'
 
-export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body
-  if (!email || !password) {
-    res.status(400).json({
-      error: 'missing email or password!'
-    })
-    return
-  }
-  next()
-}
-
-export const registerValidation = checkSchema({
-  name: {
-    notEmpty: {
-      errorMessage: 'Tên không được để trống'
-    },
-    isLength: {
-      options: { min: 2, max: 100 },
-      errorMessage: 'Tên phải có ít nhất 2 ký tự'
-    },
-    trim: true,
-    escape: true
-  },
-
+export const loginValidator = checkSchema({
   email: {
     notEmpty: {
-      errorMessage: 'Email không được để trống'
+      errorMessage: validationMessages.email.required
     },
     isEmail: {
-      errorMessage: 'Email không hợp lệ'
+      errorMessage: validationMessages.email.invalid
     },
     normalizeEmail: true,
     custom: {
-      options: async (value) => {
-        // Kiểm tra email đã tồn tại chưa
-        const emailExists = await userService.checkEmailExists(value)
-        if (emailExists) {
-          // throw new ErrorWithStatus({ message: 'Email already exits', status: 400 })
-          throw new Error('Email already exits')
+      options: async (value, { req }) => {
+        const user = await databaseService.users.findOne({ email: value, password: hashPassword(req.body.password) })
+        if (!user) {
+          throw new Error(validationMessages.email.emalilNotFound)
         }
+        req.user = user
+        return true
       }
     }
   },
 
   password: {
     notEmpty: {
-      errorMessage: 'Mật khẩu không được để trống'
+      errorMessage: validationMessages.password.required
     },
     isLength: {
       options: { min: 6, max: 50 },
-      errorMessage: 'Mật khẩu phải có ít nhất 6 ký tự  và nhỏ hơn 50 kí tự'
+      errorMessage: validationMessages.password.length
     },
     isStrongPassword: {
       options: {
@@ -63,32 +43,85 @@ export const registerValidation = checkSchema({
         minNumbers: 1,
         minSymbols: 1
       },
-      errorMessage: 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+      errorMessage: validationMessages.password.strong
+    }
+  }
+})
+
+export const registerValidation = checkSchema({
+  name: {
+    notEmpty: {
+      errorMessage: validationMessages.name.required
+    },
+    isLength: {
+      options: { min: 2, max: 100 },
+      errorMessage: validationMessages.name.length
+    },
+    trim: true,
+    escape: true
+  },
+
+  email: {
+    notEmpty: {
+      errorMessage: validationMessages.email.required
+    },
+    isEmail: {
+      errorMessage: validationMessages.email.invalid
+    },
+    normalizeEmail: true,
+    custom: {
+      options: async (value) => {
+        const emailExists = await userService.checkEmailExists(value)
+        if (emailExists) {
+          throw new Error(validationMessages.email.exists)
+        }
+        return true
+      }
+    }
+  },
+
+  password: {
+    notEmpty: {
+      errorMessage: validationMessages.password.required
+    },
+    isLength: {
+      options: { min: 6, max: 50 },
+      errorMessage: validationMessages.password.length
+    },
+    isStrongPassword: {
+      options: {
+        minLength: 6,
+        minUppercase: 1,
+        minLowercase: 1,
+        minNumbers: 1,
+        minSymbols: 1
+      },
+      errorMessage: validationMessages.password.strong
     }
   },
 
   confirm_password: {
     notEmpty: {
-      errorMessage: 'Xác nhận mật khẩu không được để trống'
+      errorMessage: validationMessages.confirmPassword.required
     },
     custom: {
       options: (value, { req }) => value === req.body.password,
-      errorMessage: 'Mật khẩu xác nhận không khớp'
+      errorMessage: validationMessages.confirmPassword.mismatch
     },
     isLength: {
       options: { min: 6, max: 50 },
-      errorMessage: 'Mật khẩu xác nhận phải có ít nhất 6 ký tự và nhỏ hơn 50 kí tự'
+      errorMessage: validationMessages.confirmPassword.length
     }
   },
 
   date_of_birth: {
     notEmpty: {
-      errorMessage: 'Ngày sinh không được để trống'
+      errorMessage: validationMessages.dateOfBirth.required
     },
     isISO8601: {
       options: { strict: true, strictSeparator: true },
-      errorMessage: 'Ngày sinh phải đúng định dạng ISO8601 (YYYY-MM-DD)'
+      errorMessage: validationMessages.dateOfBirth.format
     },
-    toDate: true // Chuyển sang kiểu Date nếu cần
+    toDate: true
   }
 })
