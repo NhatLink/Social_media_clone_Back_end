@@ -140,17 +140,18 @@ export const accessTokenValidate = checkSchema(
   {
     Authorization: {
       in: ['headers'],
-      notEmpty: {
-        errorMessage: validationMessages.accessToken.required
-      },
+      // notEmpty: {
+      //   errorMessage: validationMessages.accessToken.required
+      // },
+      trim: true,
       custom: {
         options: async (value: string, { req }) => {
-          // if (!value.startsWith('Bearer ')) {
-          //   throw new ErrorWithStatus({
-          //     message: validationMessages.accessToken.Bearer,
-          //     status: httpStatus.UNAUTHORIZED
-          //   })
-          // }
+          if (!value) {
+            throw new ErrorWithStatus({
+              message: validationMessages.accessToken.required,
+              status: httpStatus.UNAUTHORIZED
+            })
+          }
           const accessToken = value.split(' ')[1]
           if (!accessToken) {
             throw new ErrorWithStatus({
@@ -159,12 +160,13 @@ export const accessTokenValidate = checkSchema(
             })
           }
           try {
-            const decoded_authorization = await verifyToken({ token: accessToken })
+            const decoded_authorization = await verifyToken({
+              token: accessToken,
+              secretOrPublicKey: process.env.JWT_KEY_SECRET_ACCESS_TOKEN as string
+            })
             ;(req as Request).decoded_authorization = decoded_authorization
           } catch (error) {
             if (error instanceof JsonWebTokenError) {
-              console.log('error at acess')
-
               throw new ErrorWithStatus({
                 message: capitalize(error.message),
                 status: httpStatus.UNAUTHORIZED
@@ -184,17 +186,24 @@ export const accessTokenValidate = checkSchema(
 
 export const refreshTokenValidate = checkSchema({
   refresh_token: {
-    notEmpty: {
-      errorMessage: validationMessages.refreshToken.required
-    },
+    // notEmpty: {
+    //   errorMessage: validationMessages.refreshToken.required
+    // },
+    trim: true,
     custom: {
       options: async (value: string, { req }) => {
+        if (!value) {
+          throw new ErrorWithStatus({
+            message: validationMessages.refreshToken.required,
+            status: httpStatus.UNAUTHORIZED
+          })
+        }
         try {
           // const decoded_refresh_token = await verifyToken({ token: value })
           // const refresh_token_data = databaseService.refreshToken.findOne({ token: value })
           //cho vao promise.all
           const [decoded_refresh_token, refresh_token_data] = await Promise.all([
-            verifyToken({ token: value }),
+            verifyToken({ token: value, secretOrPublicKey: process.env.JWT_KEY_SECRET_REFRESH_TOKEN as string }),
             databaseService.refreshTokens.findOne({ token: value })
           ])
           if (refresh_token_data === null) {
@@ -234,6 +243,39 @@ export const refreshTokenValidate = checkSchema({
       //   req.decoded_refresh_token = decoded
       //   return true
       // }
+    }
+  }
+})
+
+export const emailVerifyTokenValidate = checkSchema({
+  email_verify_token: {
+    trim: true,
+    custom: {
+      options: async (value: string, { req }) => {
+        if (!value) {
+          throw new ErrorWithStatus({
+            message: validationMessages.verifyEmailToken.required,
+            status: httpStatus.UNAUTHORIZED
+          })
+        }
+        try {
+          const decoded_email_verify_token = await verifyToken({
+            token: value,
+            secretOrPublicKey: process.env.JWT_KEY_SECRET_EMAIL_VERIFY_TOKEN as string
+          })
+          ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+        } catch (error) {
+          if (error instanceof JsonWebTokenError) {
+            throw new ErrorWithStatus({
+              message: capitalize(error.message),
+              status: httpStatus.UNAUTHORIZED
+            })
+          } else {
+            throw error
+          }
+        }
+        return true
+      }
     }
   }
 })

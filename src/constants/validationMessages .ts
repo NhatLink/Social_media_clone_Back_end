@@ -32,7 +32,16 @@ export const validationMessages = {
     invalid: 'RefreshToken invalid',
     notExits: 'RefeshToken used or do not exits'
   },
+  verifyEmailToken: {
+    required: 'Verify Email Token required',
+    invalid: 'Verify Email Token invalid',
+    verified: 'Email alrady verified',
+    success: 'Email verify success'
+  },
   logout: {
     success: 'Logout Successfully'
+  },
+  user: {
+    notFound: 'User not found'
   }
 }
