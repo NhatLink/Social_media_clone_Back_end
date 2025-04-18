@@ -22,5 +22,17 @@ export const validationMessages = {
   dateOfBirth: {
     required: 'Ngày sinh không được để trống',
     format: 'Ngày sinh phải đúng định dạng ISO8601 (YYYY-MM-DD)'
+  },
+  accessToken: {
+    required: 'AccessToken required',
+    Bearer: 'Access token must start with Bearer'
+  },
+  refreshToken: {
+    required: 'RefreshToken required',
+    invalid: 'RefreshToken invalid',
+    notExits: 'RefeshToken used or do not exits'
+  },
+  logout: {
+    success: 'Logout Successfully'
   }
 }
