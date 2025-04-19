@@ -44,5 +44,11 @@ export const validationMessages = {
   },
   user: {
     notFound: 'User not found'
+  },
+  forgotPassword: {
+    sended: 'Check email to reset password',
+    required: 'Forgot Password Token required',
+    invalid: 'Forgot Password Token invalid',
+    success: 'Forgot Password Token verify success'
   }
 }

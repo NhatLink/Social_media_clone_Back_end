@@ -9,6 +9,7 @@ import { verifyToken } from '../units/jwt'
 import httpStatus from '../constants/httpStatus'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
+import { ObjectId } from 'mongodb'
 
 export const loginValidator = checkSchema(
   {
@@ -264,6 +265,72 @@ export const emailVerifyTokenValidate = checkSchema({
             secretOrPublicKey: process.env.JWT_KEY_SECRET_EMAIL_VERIFY_TOKEN as string
           })
           ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+        } catch (error) {
+          if (error instanceof JsonWebTokenError) {
+            throw new ErrorWithStatus({
+              message: capitalize(error.message),
+              status: httpStatus.UNAUTHORIZED
+            })
+          } else {
+            throw error
+          }
+        }
+        return true
+      }
+    }
+  }
+})
+
+export const forgotPasswordValidator = checkSchema(
+  {
+    email: {
+      notEmpty: {
+        errorMessage: validationMessages.email.required
+      },
+      isEmail: {
+        errorMessage: validationMessages.email.invalid
+      },
+      normalizeEmail: true,
+      custom: {
+        options: async (value, { req }) => {
+          const user = await databaseService.users.findOne({ email: value })
+          if (!user) {
+            throw new Error(validationMessages.email.emalilNotFound)
+          }
+          req.user = user
+          return true
+        }
+      }
+    }
+  },
+  ['body']
+)
+
+//cách này thì mình sẽ kiểm tra và verify ngay tại middleware luôn, không phải lưu decoded qua req và verify user_id ngay tại controller nữa
+export const verifyForgotPasswordTokenValidator = checkSchema({
+  forgot_password_token: {
+    trim: true,
+    custom: {
+      options: async (value: string, { req }) => {
+        if (!value) {
+          throw new ErrorWithStatus({
+            message: validationMessages.forgotPassword.required,
+            status: httpStatus.NOT_FOUND
+          })
+        }
+        try {
+          const decoded_forgot_password_token = await verifyToken({
+            token: value,
+            secretOrPublicKey: process.env.JWT_KEY_FORGOT_PASSWORD_VERIFY_TOKEN as string
+          })
+          const { user_id } = decoded_forgot_password_token
+          const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+          if (!user) {
+            throw new ErrorWithStatus({
+              message: validationMessages.user.notFound,
+              status: httpStatus.UNAUTHORIZED
+            })
+          }
         } catch (error) {
           if (error instanceof JsonWebTokenError) {
             throw new ErrorWithStatus({
