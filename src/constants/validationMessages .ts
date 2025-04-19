@@ -36,7 +36,8 @@ export const validationMessages = {
     required: 'Verify Email Token required',
     invalid: 'Verify Email Token invalid',
     verified: 'Email alrady verified',
-    success: 'Email verify success'
+    success: 'Email verify success',
+    resendSuccess: 'Resend email success'
   },
   logout: {
     success: 'Logout Successfully'
