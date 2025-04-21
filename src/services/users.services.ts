@@ -197,6 +197,22 @@ class UserService {
       message: validationMessages.resetpassword.success
     }
   }
+  async getMe(user_id: string) {
+    const result = databaseService.users.findOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        projection: {
+          //sử dụng projection khi muốn ẩn 1 số thông tin nhạy cảm trong data
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0
+        }
+      }
+    )
+    return result
+  }
 }
 
 // Export object để sử dụng luôn mà không cần khởi tạo lại

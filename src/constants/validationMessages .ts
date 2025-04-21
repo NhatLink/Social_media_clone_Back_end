@@ -43,7 +43,8 @@ export const validationMessages = {
     success: 'Logout Successfully'
   },
   user: {
-    notFound: 'User not found'
+    notFound: 'User not found',
+    Found: 'Get user success'
   },
   forgotPassword: {
     sended: 'Check email to reset password',

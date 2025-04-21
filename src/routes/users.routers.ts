@@ -12,6 +12,7 @@ import {
 import {
   emailVerifyController,
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
   registerController,
@@ -36,5 +37,5 @@ usersRouter.post(
   wrapAsync(verifyForgotPasswordTokenController)
 )
 usersRouter.post('/reset-password', validate(resetPasswordValidator), wrapAsync(resetPasswordController))
-
+usersRouter.get('/me', validate(accessTokenValidate), wrapAsync(getMeController))
 export default usersRouter
