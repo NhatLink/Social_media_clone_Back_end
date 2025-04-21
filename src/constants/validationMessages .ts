@@ -49,6 +49,10 @@ export const validationMessages = {
     sended: 'Check email to reset password',
     required: 'Forgot Password Token required',
     invalid: 'Forgot Password Token invalid',
-    success: 'Forgot Password Token verify success'
+    success: 'Forgot Password Token verify success',
+    notExits: 'ForgotPassword token used or do not exits'
+  },
+  resetpassword: {
+    success: 'Reset password success, login again !'
   }
 }

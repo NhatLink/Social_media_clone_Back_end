@@ -34,3 +34,9 @@ export interface forgotPasswordReqBody {
 export interface verifyForgotPasswordTokenReqBody {
   forgot_password_token: string
 }
+
+export interface resestPasswordReqBody {
+  forgot_password_token: string
+  password: string
+  confirm_password: string
+}

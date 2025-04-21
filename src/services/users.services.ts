@@ -177,6 +177,26 @@ class UserService {
       message: validationMessages.forgotPassword.sended
     }
   }
+
+  async resetpassword(user_id: string, password: string) {
+    databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          forgot_password_token: '',
+          password: hashPassword(password)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    return {
+      message: validationMessages.resetpassword.success
+    }
+  }
 }
 
 // Export object để sử dụng luôn mà không cần khởi tạo lại

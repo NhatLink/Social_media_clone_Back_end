@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { body, checkSchema } from 'express-validator'
+import { body, checkSchema, ParamSchema } from 'express-validator'
 import userService from '../services/users.services'
 import { ErrorWithStatus } from '../models/Errors'
 import { validationMessages } from '../constants/validationMessages '
@@ -10,6 +10,79 @@ import httpStatus from '../constants/httpStatus'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
 import { ObjectId } from 'mongodb'
+
+//option khi có quá nhiều validator giống nhau
+export const passwordValidatorSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: validationMessages.password.required
+  },
+  isLength: {
+    options: { min: 6, max: 50 },
+    errorMessage: validationMessages.password.length
+  },
+  isStrongPassword: {
+    options: {
+      minLength: 6,
+      minUppercase: 1,
+      minLowercase: 1,
+      minNumbers: 1,
+      minSymbols: 1
+    },
+    errorMessage: validationMessages.password.strong
+  }
+}
+
+export const confirmPasswordValidatorSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: validationMessages.confirmPassword.required
+  },
+  custom: {
+    options: (value, { req }) => value === req.body.password,
+    errorMessage: validationMessages.confirmPassword.mismatch
+  },
+  isLength: {
+    options: { min: 6, max: 50 },
+    errorMessage: validationMessages.confirmPassword.length
+  }
+}
+
+export const verifyForgotPasswordTokenSchema: ParamSchema = {
+  trim: true,
+  custom: {
+    options: async (value: string, { req }) => {
+      if (!value) {
+        throw new ErrorWithStatus({
+          message: validationMessages.forgotPassword.required,
+          status: httpStatus.NOT_FOUND
+        })
+      }
+      try {
+        const decoded_forgot_password_token = await verifyToken({
+          token: value,
+          secretOrPublicKey: process.env.JWT_KEY_FORGOT_PASSWORD_VERIFY_TOKEN as string
+        })
+        const { user_id } = decoded_forgot_password_token
+        const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+        if (!user) {
+          throw new ErrorWithStatus({
+            message: validationMessages.user.notFound,
+            status: httpStatus.UNAUTHORIZED
+          })
+        }
+      } catch (error) {
+        if (error instanceof JsonWebTokenError) {
+          throw new ErrorWithStatus({
+            message: capitalize(error.message),
+            status: httpStatus.UNAUTHORIZED
+          })
+        } else {
+          throw error
+        }
+      }
+      return true
+    }
+  }
+}
 
 export const loginValidator = checkSchema(
   {
@@ -343,6 +416,67 @@ export const verifyForgotPasswordTokenValidator = checkSchema({
         }
         return true
       }
+    }
+  }
+})
+
+export const resetPasswordValidator = checkSchema({
+  forgot_password_token: {
+    trim: true,
+    custom: {
+      options: async (value: string, { req }) => {
+        if (!value) {
+          throw new ErrorWithStatus({
+            message: validationMessages.forgotPassword.required,
+            status: httpStatus.NOT_FOUND
+          })
+        }
+        try {
+          const decoded_forgot_password_token = await verifyToken({
+            token: value,
+            secretOrPublicKey: process.env.JWT_KEY_FORGOT_PASSWORD_VERIFY_TOKEN as string
+          })
+          const { user_id } = decoded_forgot_password_token
+          ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
+          const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+          if (!user) {
+            throw new ErrorWithStatus({
+              message: validationMessages.user.notFound,
+              status: httpStatus.UNAUTHORIZED
+            })
+          }
+          if (user.forgot_password_token !== value) {
+            throw new ErrorWithStatus({
+              message: validationMessages.forgotPassword.notExits,
+              status: httpStatus.UNAUTHORIZED
+            })
+          }
+        } catch (error) {
+          if (error instanceof JsonWebTokenError) {
+            throw new ErrorWithStatus({
+              message: capitalize(error.message),
+              status: httpStatus.UNAUTHORIZED
+            })
+          } else {
+            throw error
+          }
+        }
+        return true
+      }
+    }
+  },
+  password: passwordValidatorSchema,
+  confirm_password: {
+    notEmpty: {
+      errorMessage: validationMessages.confirmPassword.required
+    },
+    custom: {
+      options: (value, { req }) => value === req.body.password,
+      errorMessage: validationMessages.confirmPassword.mismatch
+    },
+    isLength: {
+      options: { min: 6, max: 50 },
+      errorMessage: validationMessages.confirmPassword.length
     }
   }
 })
