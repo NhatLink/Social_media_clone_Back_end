@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import userService from '../services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
+  followUserReqBody,
   forgotPasswordReqBody,
   LoginReqBody,
   LogoutReqBody,
@@ -148,6 +149,26 @@ export const getUserProfile = async (req: Request, res: Response) => {
   const result = await userService.getUserProfile(username)
   res.json({
     message: validationMessages.user.Found,
+    result
+  })
+}
+
+export const followUserController = async (req: Request<ParamsDictionary, any, followUserReqBody>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { follow_user_id } = req.body
+  const result = await userService.followUser(follow_user_id, user_id)
+  res.json({
+    message: validationMessages.followers.successsFollow,
+    result
+  })
+}
+
+export const unfollowUserController = async (req: Request<ParamsDictionary, any, followUserReqBody>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { follow_user_id } = req.body
+  const result = await userService.unfollowUser(follow_user_id, user_id)
+  res.json({
+    message: validationMessages.followers.unfollowSuccess,
     result
   })
 }

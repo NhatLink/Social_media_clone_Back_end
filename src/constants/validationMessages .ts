@@ -57,5 +57,15 @@ export const validationMessages = {
   },
   resetpassword: {
     success: 'Reset password success, login again !'
+  },
+  followers: {
+    notExits: 'Follower not exits',
+    alreadyFollow: 'User already follow this person',
+    successsFollow: 'Follow user success',
+    followerEmpty: 'follower id must not empty',
+    followerNotString: 'follower id must be string',
+    followerInvalidId: 'Invalid follower id',
+    notFollowYet: 'Bạn chưa theo dõi người dùng này',
+    unfollowSuccess: 'Hủy theo dõi thành công'
   }
 }

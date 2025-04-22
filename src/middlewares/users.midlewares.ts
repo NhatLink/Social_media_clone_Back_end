@@ -577,6 +577,18 @@ export const updateMeValidator = checkSchema({
       options: [/^[a-zA-Z0-9_]+$/],
       errorMessage: 'Tên người dùng chỉ được chứa chữ cái, số và dấu gạch dưới'
     },
+    custom: {
+      options: async (value) => {
+        const user = await databaseService.users.findOne({ username: value })
+        if (user) {
+          throw new ErrorWithStatus({
+            message: 'username already exits',
+            status: httpStatus.BAD_REQUEST
+          })
+        }
+        return true
+      }
+    },
     trim: true,
     escape: true
   },
@@ -600,6 +612,28 @@ export const updateMeValidator = checkSchema({
     isLength: {
       options: { min: 1, max: 100 },
       errorMessage: 'Cover_photo chỉ trong khoảng 1 đến 200 kí tự'
+    },
+    trim: true,
+    escape: true
+  }
+})
+
+export const followValidator = checkSchema({
+  follow_user_id: {
+    notEmpty: {
+      errorMessage: validationMessages.followers.followerEmpty
+    },
+    isString: {
+      errorMessage: validationMessages.followers.followerNotString
+    },
+    custom: {
+      options: async (value) => {
+        // Kiểm tra ObjectId hợp lệ
+        if (!ObjectId.isValid(value)) {
+          throw new Error(validationMessages.followers.followerInvalidId)
+        }
+        return true
+      }
     },
     trim: true,
     escape: true

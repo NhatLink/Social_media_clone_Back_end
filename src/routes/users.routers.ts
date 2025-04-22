@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   accessTokenValidate,
   emailVerifyTokenValidate,
+  followValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidate,
@@ -13,6 +14,7 @@ import {
 } from '../middlewares/users.midlewares'
 import {
   emailVerifyController,
+  followUserController,
   forgotPasswordController,
   getMeController,
   getUserProfile,
@@ -21,6 +23,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
+  unfollowUserController,
   updateMeController,
   verifyForgotPasswordTokenController
 } from '../controllers/users.controllers'
@@ -62,4 +65,18 @@ usersRouter.patch(
   wrapAsync(updateMeController)
 )
 usersRouter.get('/:username', wrapAsync(getUserProfile))
+usersRouter.post(
+  '/follow',
+  validate(accessTokenValidate),
+  verifiedUserValidator,
+  validate(followValidator),
+  wrapAsync(followUserController)
+)
+usersRouter.post(
+  '/unfollow',
+  validate(accessTokenValidate),
+  verifiedUserValidator,
+  validate(followValidator),
+  wrapAsync(unfollowUserController)
+)
 export default usersRouter

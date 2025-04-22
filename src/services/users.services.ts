@@ -11,6 +11,7 @@ import { config } from 'dotenv'
 import type { StringValue } from 'ms'
 import { ErrorWithStatus } from '../models/Errors'
 import httpStatus from '../constants/httpStatus'
+import Followers from '../models/schemas/followers.schems'
 config()
 class UserService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -284,6 +285,85 @@ class UserService {
       })
     }
     return user
+  }
+
+  async followUser(follow_user_id: string, user_id: string) {
+    const id = new ObjectId(user_id) //chuyen string thanh objectID
+    const follower_id = new ObjectId(follow_user_id)
+    const followedUser = await databaseService.users.findOne({ _id: follower_id })
+    if (user_id === follow_user_id) {
+      throw new ErrorWithStatus({
+        status: httpStatus.BAD_REQUEST,
+        message: validationMessages.followers.notExits
+      })
+    }
+    if (!followedUser) {
+      throw new ErrorWithStatus({
+        status: httpStatus.BAD_REQUEST,
+        message: validationMessages.followers.notExits
+      })
+    }
+
+    // Có thể kiểm tra thêm nếu đã follow rồi thì không cho follow lại:
+    const alreadyFollowed = await databaseService.followers.findOne({
+      followed_user_id: follower_id,
+      user_id: id
+    })
+
+    if (alreadyFollowed) {
+      throw new ErrorWithStatus({
+        status: httpStatus.BAD_REQUEST,
+        message: validationMessages.followers.alreadyFollow
+      })
+    }
+    const result = await databaseService.followers.insertOne(
+      new Followers({ followed_user_id: follower_id, user_id: id })
+    )
+    return {
+      result
+    }
+  }
+
+  async unfollowUser(follow_user_id: string, user_id: string) {
+    const id = new ObjectId(user_id)
+    const follower_id = new ObjectId(follow_user_id)
+
+    if (user_id === follow_user_id) {
+      throw new ErrorWithStatus({
+        status: httpStatus.BAD_REQUEST,
+        message: validationMessages.followers.notExits
+      })
+    }
+
+    const followedUser = await databaseService.users.findOne({ _id: follower_id })
+
+    if (!followedUser) {
+      throw new ErrorWithStatus({
+        status: httpStatus.BAD_REQUEST,
+        message: validationMessages.followers.notExits
+      })
+    }
+
+    const alreadyFollowed = await databaseService.followers.findOne({
+      followed_user_id: follower_id,
+      user_id: id
+    })
+
+    if (!alreadyFollowed) {
+      throw new ErrorWithStatus({
+        status: httpStatus.BAD_REQUEST,
+        message: validationMessages.followers.notFollowYet
+      })
+    }
+
+    const result = await databaseService.followers.deleteOne({
+      followed_user_id: follower_id,
+      user_id: id
+    })
+
+    return {
+      result
+    }
   }
 }
 
