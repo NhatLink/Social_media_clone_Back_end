@@ -44,7 +44,9 @@ export const validationMessages = {
   },
   user: {
     notFound: 'User not found',
-    Found: 'Get user success'
+    Found: 'Get user success',
+    notVerify: 'User need to verify email',
+    updateSuccess: 'Update user success'
   },
   forgotPassword: {
     sended: 'Check email to reset password',

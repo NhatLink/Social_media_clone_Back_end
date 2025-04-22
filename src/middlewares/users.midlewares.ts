@@ -8,8 +8,10 @@ import { hashPassword } from '../units/crypto'
 import { verifyToken } from '../units/jwt'
 import httpStatus from '../constants/httpStatus'
 import { JsonWebTokenError } from 'jsonwebtoken'
-import { capitalize } from 'lodash'
+import { capitalize, result } from 'lodash'
 import { ObjectId } from 'mongodb'
+import { TokenPayload } from '../models/requests/users.requests'
+import { UserVerifyStatus } from '../constants/enums'
 
 //option khi có quá nhiều validator giống nhau
 export const passwordValidatorSchema: ParamSchema = {
@@ -249,7 +251,6 @@ export const accessTokenValidate = checkSchema(
               throw error
             }
           }
-
           return true
         }
       }
@@ -478,5 +479,129 @@ export const resetPasswordValidator = checkSchema({
       options: { min: 6, max: 50 },
       errorMessage: validationMessages.confirmPassword.length
     }
+  }
+})
+
+export const verifiedUserValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { verify, user_id } = req.decoded_authorization as TokenPayload
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+  if (verify !== UserVerifyStatus.Verified) {
+    return next(
+      new ErrorWithStatus({
+        message: validationMessages.user.notVerify,
+        status: httpStatus.FORBIDDEN
+      })
+    )
+  }
+  if (!user) {
+    return next(
+      new ErrorWithStatus({
+        message: validationMessages.user.notFound,
+        status: httpStatus.NOT_FOUND
+      })
+    )
+  }
+  if (user?.verify !== UserVerifyStatus.Verified) {
+    return next(
+      new ErrorWithStatus({
+        message: validationMessages.user.notVerify,
+        status: httpStatus.FORBIDDEN
+      })
+    )
+  }
+  next()
+}
+
+//lưu vào messagevalidator sau
+export const updateMeValidator = checkSchema({
+  name: {
+    optional: true,
+    isLength: {
+      options: { min: 2, max: 100 },
+      errorMessage: validationMessages.name.length
+    },
+    trim: true,
+    escape: true
+  },
+  date_of_birth: {
+    optional: true,
+    isISO8601: {
+      options: { strict: true, strictSeparator: true },
+      errorMessage: validationMessages.dateOfBirth.format
+    },
+    toDate: true
+  },
+  bio: {
+    optional: true,
+    isString: {
+      errorMessage: 'Bio phải là một chuỗi kí tự'
+    },
+    isLength: {
+      options: { min: 1, max: 100 },
+      errorMessage: 'Bio trong khoảng 1 đến 200 kí tự'
+    },
+    trim: true,
+    escape: true
+  },
+  location: {
+    optional: true,
+    isString: {
+      errorMessage: 'Vị trí phải là một chuỗi kí tự'
+    },
+    isLength: {
+      options: { min: 1, max: 100 },
+      errorMessage: 'Vị trí chỉ trong khoảng 1 đến 200 kí tự'
+    },
+    trim: true,
+    escape: true
+  },
+  website: {
+    optional: true,
+    isURL: {
+      errorMessage: 'Địa chỉ website không hợp lệ'
+    },
+    isLength: {
+      options: { min: 1, max: 100 },
+      errorMessage: 'Địa chỉ website chỉ trong khoảng 1 đến 200 kí tự'
+    },
+    trim: true,
+    escape: true
+  },
+  username: {
+    optional: true,
+    isLength: {
+      options: { min: 3, max: 30 },
+      errorMessage: 'Tên người dùng phải từ 3 đến 30 ký tự'
+    },
+    matches: {
+      options: [/^[a-zA-Z0-9_]+$/],
+      errorMessage: 'Tên người dùng chỉ được chứa chữ cái, số và dấu gạch dưới'
+    },
+    trim: true,
+    escape: true
+  },
+  avatar: {
+    optional: true,
+    isString: {
+      errorMessage: 'Avartar phải là một chuỗi kí tự'
+    },
+    isLength: {
+      options: { min: 1, max: 100 },
+      errorMessage: 'Avatar chỉ trong khoảng 1 đến 200 kí tự'
+    },
+    trim: true,
+    escape: true
+  },
+  cover_photo: {
+    optional: true,
+    isString: {
+      errorMessage: 'Cover_photo phải là một chuỗi kí tự'
+    },
+    isLength: {
+      options: { min: 1, max: 100 },
+      errorMessage: 'Cover_photo chỉ trong khoảng 1 đến 200 kí tự'
+    },
+    trim: true,
+    escape: true
   }
 })

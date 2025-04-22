@@ -8,6 +8,7 @@ import {
   RegisterReqBody,
   resestPasswordReqBody,
   TokenPayload,
+  UpdateMeReqBody,
   VerifyEmailReqBody,
   verifyForgotPasswordTokenReqBody
 } from '../models/requests/users.requests'
@@ -21,7 +22,7 @@ import { UserVerifyStatus } from '../constants/enums'
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
-  const result = await userService.login(user_id.toString())
+  const result = await userService.login(user_id.toString(), user.verify)
   res.status(200).json({
     message: 'Login successfully',
     result
@@ -95,8 +96,8 @@ export const forgotPasswordController = async (
   req: Request<ParamsDictionary, any, forgotPasswordReqBody>,
   res: Response
 ) => {
-  const { _id } = req.user as User
-  const result = await userService.forgotPassword((_id as ObjectId).toString())
+  const { _id, verify } = req.user as User
+  const result = await userService.forgotPassword((_id as ObjectId).toString(), verify)
   res.json({
     result
   })
@@ -125,10 +126,19 @@ export const resetPasswordController = async (
 
 export const getMeController = async (req: Request, res: Response) => {
   const { user_id } = req.decoded_authorization as TokenPayload
-  console.log(user_id)
   const result = await userService.getMe(user_id)
   res.json({
     message: validationMessages.user.Found,
+    result
+  })
+}
+
+export const updateMeController = async (req: Request<ParamsDictionary, any, UpdateMeReqBody>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { body } = req
+  const result = await userService.updateMe(user_id, body)
+  res.json({
+    message: validationMessages.user.updateSuccess,
     result
   })
 }
