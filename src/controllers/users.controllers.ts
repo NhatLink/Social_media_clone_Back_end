@@ -142,3 +142,12 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
     result
   })
 }
+
+export const getUserProfile = async (req: Request, res: Response) => {
+  const { username } = req.params
+  const result = await userService.getUserProfile(username)
+  res.json({
+    message: validationMessages.user.Found,
+    result
+  })
+}

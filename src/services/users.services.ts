@@ -9,6 +9,8 @@ import databaseService from './database.services'
 import { validationMessages } from '../constants/validationMessages '
 import { config } from 'dotenv'
 import type { StringValue } from 'ms'
+import { ErrorWithStatus } from '../models/Errors'
+import httpStatus from '../constants/httpStatus'
 config()
 class UserService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -79,6 +81,7 @@ class UserService {
       new User({
         _id: user_id,
         ...payload,
+        username: `user${user_id.toString()}`,
         email_verify_token,
         password: hashPassword(payload.password)
       })
@@ -256,6 +259,31 @@ class UserService {
       }
     )
     return result
+  }
+  async getUserProfile(username: string) {
+    const user = await databaseService.users.findOne(
+      {
+        username: username
+      },
+      {
+        projection: {
+          //sử dụng projection khi muốn ẩn 1 số thông tin nhạy cảm trong data
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          created_at: 0,
+          updated_at: 0,
+          verify: 0
+        }
+      }
+    )
+    if (user === null) {
+      throw new ErrorWithStatus({
+        message: validationMessages.user.notFound,
+        status: httpStatus.NOT_FOUND
+      })
+    }
+    return user
   }
 }
 

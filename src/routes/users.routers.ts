@@ -15,6 +15,7 @@ import {
   emailVerifyController,
   forgotPasswordController,
   getMeController,
+  getUserProfile,
   loginController,
   logoutController,
   registerController,
@@ -60,4 +61,5 @@ usersRouter.patch(
   ]),
   wrapAsync(updateMeController)
 )
+usersRouter.get('/:username', wrapAsync(getUserProfile))
 export default usersRouter
