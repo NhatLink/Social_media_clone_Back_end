@@ -365,6 +365,34 @@ class UserService {
       result
     }
   }
+
+  async changePassword(new_password: string, user_id: string) {
+    const result = await databaseService.users.findOneAndUpdate(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          password: hashPassword(new_password)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      },
+      {
+        projection: {
+          //sử dụng projection khi muốn ẩn 1 số thông tin nhạy cảm trong data
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0
+        },
+        returnDocument: 'after'
+      }
+    )
+    return {
+      result
+    }
+  }
 }
 
 // Export object để sử dụng luôn mà không cần khởi tạo lại

@@ -639,3 +639,76 @@ export const followValidator = checkSchema({
     escape: true
   }
 })
+
+export const changePasswordValidator = checkSchema({
+  old_password: {
+    notEmpty: {
+      errorMessage: validationMessages.password.required
+    },
+    isLength: {
+      options: { min: 6, max: 50 },
+      errorMessage: validationMessages.password.length
+    },
+    custom: {
+      options: async (value, { req }) => {
+        // try{
+        const { user_id } = req.decoded_authorization as TokenPayload
+        const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+        if (!user) {
+          throw new ErrorWithStatus({
+            message: validationMessages.user.notFound,
+            status: httpStatus.NOT_FOUND
+          })
+        }
+        if (user?.password !== hashPassword(value)) {
+          throw new ErrorWithStatus({
+            message: validationMessages.password.notMatch,
+            status: httpStatus.FORBIDDEN
+          })
+        }
+        // } catch (error) {
+        //   if (error instanceof JsonWebTokenError) {
+        //     throw new ErrorWithStatus({
+        //       message: capitalize(error.message),
+        //       status: httpStatus.UNAUTHORIZED
+        //     })
+        //   } else {
+        //     throw error
+        //   }
+        // }
+      }
+    }
+  },
+  new_password: {
+    notEmpty: {
+      errorMessage: validationMessages.password.required
+    },
+    isLength: {
+      options: { min: 6, max: 50 },
+      errorMessage: validationMessages.password.length
+    },
+    isStrongPassword: {
+      options: {
+        minLength: 6,
+        minUppercase: 1,
+        minLowercase: 1,
+        minNumbers: 1,
+        minSymbols: 1
+      },
+      errorMessage: validationMessages.password.strong
+    }
+  },
+  confirm_new_password: {
+    notEmpty: {
+      errorMessage: validationMessages.confirmPassword.required
+    },
+    custom: {
+      options: (value, { req }) => value === req.body.new_password,
+      errorMessage: validationMessages.confirmPassword.mismatch
+    },
+    isLength: {
+      options: { min: 6, max: 50 },
+      errorMessage: validationMessages.confirmPassword.length
+    }
+  }
+})

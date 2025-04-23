@@ -12,7 +12,9 @@ export const validationMessages = {
   password: {
     required: 'Mật khẩu không được để trống',
     length: 'Mật khẩu phải có ít nhất 6 ký tự  và nhỏ hơn 50 kí tự',
-    strong: 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+    strong: 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt',
+    notMatch: 'Password not match',
+    changeSuccess: 'Changed password success'
   },
   confirmPassword: {
     required: 'Xác nhận mật khẩu không được để trống',

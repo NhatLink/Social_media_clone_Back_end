@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   accessTokenValidate,
+  changePasswordValidator,
   emailVerifyTokenValidate,
   followValidator,
   forgotPasswordValidator,
@@ -13,6 +14,7 @@ import {
   verifyForgotPasswordTokenValidator
 } from '../middlewares/users.midlewares'
 import {
+  changePasswordController,
   emailVerifyController,
   followUserController,
   forgotPasswordController,
@@ -79,4 +81,12 @@ usersRouter.post(
   validate(followValidator),
   wrapAsync(unfollowUserController)
 )
+usersRouter.put(
+  '/change_password',
+  validate(accessTokenValidate),
+  verifiedUserValidator,
+  validate(changePasswordValidator),
+  wrapAsync(changePasswordController)
+)
+
 export default usersRouter
