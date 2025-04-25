@@ -69,5 +69,8 @@ export const validationMessages = {
     followerInvalidId: 'Invalid follower id',
     notFollowYet: 'Bạn chưa theo dõi người dùng này',
     unfollowSuccess: 'Hủy theo dõi thành công'
+  },
+  uploadImg: {
+    success: 'Upload img success'
   }
 }
