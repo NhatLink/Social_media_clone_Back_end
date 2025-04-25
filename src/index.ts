@@ -5,7 +5,7 @@ import { errorHandlerDefault } from './middlewares/error.midlewares'
 import mediasRouter from './routes/medias.routers'
 import { ensureUploadDir } from './units/file'
 import { config } from 'dotenv'
-import { UPLOAD_IMAGE } from './constants/dir'
+import { UPLOAD_IMAGE, UPLOAD_VIDEO } from './constants/dir'
 import staticRouter from './routes/static.routers'
 config()
 const app = express()
@@ -18,7 +18,7 @@ app.use(express.json()) // ✅ Cần thiết để đọc req.body
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)
-// app.use('/static', express.static(UPLOAD_IMAGE))
+// app.use('/static/video', express.static(UPLOAD_VIDEO))
 databaseService.connect()
 app.use(errorHandlerDefault)
 app.listen(process.env.PORT, () => {
