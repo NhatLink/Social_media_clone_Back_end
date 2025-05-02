@@ -7,6 +7,8 @@ import { ensureUploadDir } from './units/file'
 import { config } from 'dotenv'
 import { UPLOAD_IMAGE, UPLOAD_VIDEO } from './constants/dir'
 import staticRouter from './routes/static.routers'
+import validate from './units/validation'
+import { accessTokenValidate } from './middlewares/users.midlewares'
 config()
 const app = express()
 const port = 3000
@@ -18,7 +20,8 @@ app.use(express.json()) // ✅ Cần thiết để đọc req.body
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)
-// app.use('/static/video', express.static(UPLOAD_VIDEO))
+// app.use('/static/video', validate(accessTokenValidate), express.static(UPLOAD_VIDEO))
+// app.use('/static/image', validate(accessTokenValidate), express.static(UPLOAD_IMAGE))
 databaseService.connect()
 app.use(errorHandlerDefault)
 app.listen(process.env.PORT, () => {

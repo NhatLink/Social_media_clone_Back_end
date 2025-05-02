@@ -366,6 +366,51 @@ class UserService {
     }
   }
 
+  async listFollowers(user_id: string, page: number, limit: number) {
+    const id = new ObjectId(user_id)
+
+    // Tính toán vị trí bắt đầu và số lượng người theo dõi cần lấy
+    const skip = (page - 1) * limit
+
+    // Thực hiện aggregate với phân trang
+    const followersList = await databaseService.followers
+      .aggregate([
+        { $match: { user_id: id } }, // Lọc theo user_id
+        {
+          $lookup: {
+            from: 'users', // Bảng users
+            localField: 'followed_user_id', // Trường trong followers để join
+            foreignField: '_id', // Trường trong bảng users để join
+            as: 'userDetails' // Tên alias cho kết quả join
+          }
+        },
+        { $unwind: '$userDetails' }, // Giải nén userDetails để dễ dàng truy cập
+        {
+          $project: {
+            // Chọn các trường cần trả về
+            followed_user_id: 1, // Giữ lại follower_id nếu cần
+            'userDetails.name': 1, // Lấy tên người dùng
+            'userDetails.avatar': 1, // Lấy avatar người dùng
+            'userDetails._id': 1 // Lấy ID người dùng
+          }
+        },
+        { $skip: skip }, // Bỏ qua số lượng bản ghi trước đó để phân trang
+        { $limit: limit } // Giới hạn số lượng bản ghi trả về mỗi trang
+      ])
+      .toArray()
+
+    // Đếm tổng số lượng người theo dõi
+    const totalFollowers = await databaseService.followers.countDocuments({ user_id: id })
+
+    return {
+      count: followersList.length,
+      totalFollowers, // Tổng số người theo dõi
+      totalPages: Math.ceil(totalFollowers / limit), // Tổng số trang
+      currentPage: page, // Trang hiện tại
+      followers: followersList // Danh sách người theo dõi
+    }
+  }
+
   async changePassword(new_password: string, user_id: string) {
     const result = await databaseService.users.findOneAndUpdate(
       {
@@ -391,6 +436,20 @@ class UserService {
     )
     return {
       result
+    }
+  }
+  async refreshToken(refreshToken: string, user_id: string, verify: UserVerifyStatus) {
+    await databaseService.refreshTokens.deleteOne({ token: refreshToken })
+    const [access_token, refresh_token] = await this.signRefershTokenAccessToken({
+      user_id: user_id.toString(),
+      verify: verify
+    })
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
+    )
+    return {
+      access_token,
+      refresh_token
     }
   }
 }

@@ -640,6 +640,43 @@ export const followValidator = checkSchema({
   }
 })
 
+export const followerListValidator = checkSchema({
+  page: {
+    notEmpty: {
+      errorMessage: 'Page number is required'
+    },
+    isNumeric: {
+      errorMessage: 'Page must be a number'
+    },
+    toInt: true, // Tùy chọn này giúp chuyển đổi giá trị thành kiểu số nguyên
+    custom: {
+      options: (value) => {
+        if (parseInt(value) <= 0) {
+          throw new Error('Page number must be greater than 0')
+        }
+        return true
+      }
+    }
+  },
+  limit: {
+    notEmpty: {
+      errorMessage: 'Limit number is required'
+    },
+    isNumeric: {
+      errorMessage: 'Limit must be a number'
+    },
+    toInt: true, // Chuyển đổi giá trị thành số nguyên
+    custom: {
+      options: (value) => {
+        if (parseInt(value) <= 0) {
+          throw new Error('Limit number must be greater than 0')
+        }
+        return true
+      }
+    }
+  }
+})
+
 export const changePasswordValidator = checkSchema({
   old_password: {
     notEmpty: {

@@ -3,6 +3,7 @@ import {
   accessTokenValidate,
   changePasswordValidator,
   emailVerifyTokenValidate,
+  followerListValidator,
   followValidator,
   forgotPasswordValidator,
   loginValidator,
@@ -18,10 +19,12 @@ import {
   emailVerifyController,
   followUserController,
   forgotPasswordController,
+  getListFollowers,
   getMeController,
   getUserProfile,
   loginController,
   logoutController,
+  refreshTokenController,
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
@@ -38,6 +41,7 @@ const usersRouter = Router()
 
 usersRouter.post('/login', validate(loginValidator), wrapAsync(loginController))
 usersRouter.post('/logout', validate(accessTokenValidate), validate(refreshTokenValidate), wrapAsync(logoutController))
+usersRouter.post('/refresh-token', validate(refreshTokenValidate), wrapAsync(refreshTokenController))
 usersRouter.post('/verify-email', validate(emailVerifyTokenValidate), wrapAsync(emailVerifyController))
 usersRouter.post('/resend-verify-email', validate(accessTokenValidate), wrapAsync(resendEmailVerifyController))
 usersRouter.post('/register', validate(registerValidation), wrapAsync(registerController))
@@ -81,8 +85,15 @@ usersRouter.post(
   validate(followValidator),
   wrapAsync(unfollowUserController)
 )
+usersRouter.post(
+  '/follower-list',
+  validate(accessTokenValidate),
+  verifiedUserValidator,
+  validate(followerListValidator),
+  wrapAsync(getListFollowers)
+)
 usersRouter.put(
-  '/change_password',
+  '/change-password',
   validate(accessTokenValidate),
   verifiedUserValidator,
   validate(changePasswordValidator),

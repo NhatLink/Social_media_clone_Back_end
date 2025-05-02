@@ -174,6 +174,15 @@ export const unfollowUserController = async (req: Request<ParamsDictionary, any,
   })
 }
 
+export const getListFollowers = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { page, limit } = req.body
+  const result = await userService.listFollowers(user_id, page, limit)
+  res.json({
+    result
+  })
+}
+
 export const changePasswordController = async (
   req: Request<ParamsDictionary, any, changePasswordReqBody>,
   res: Response
@@ -185,4 +194,14 @@ export const changePasswordController = async (
     message: validationMessages.password.changeSuccess,
     result
   })
+}
+
+export const refreshTokenController = async (req: Request, res: Response) => {
+  const { refresh_token } = req.body
+  const { user_id, verify } = req.decoded_refresh_token as TokenPayload
+  const result = await userService.refreshToken(refresh_token, user_id, verify)
+  res.status(200).json({
+    result
+  })
+  return
 }
